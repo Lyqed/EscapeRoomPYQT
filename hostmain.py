@@ -26,6 +26,7 @@ class EscapeRoomApp(QMainWindow):
             self.labels.append(label)
 
             button = QPushButton('O', self)
+            button.setFocusPolicy(Qt.NoFocus)  # Set the focus policy to NoFocus
             button.clicked.connect(self.make_button_handler(i))
             self.buttons.append(button)
 
@@ -70,7 +71,12 @@ class EscapeRoomApp(QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         if key in (Qt.Key_Right, Qt.Key_Left):
-            self.selected_index = (self.selected_index + 1) % 5 if key == Qt.Key_Right else (self.selected_index - 1) % 5
+            # Update selected_index and ensure it stays within bounds
+            if key == Qt.Key_Right:
+                self.selected_index = (self.selected_index + 1) % len(self.labels)
+            else:
+                self.selected_index = (self.selected_index - 1) % len(self.labels)
+        
             self.highlightSelectedRectangle()
 
         elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
@@ -79,20 +85,18 @@ class EscapeRoomApp(QMainWindow):
                 self.sequences[self.selected_index] += event.text().upper()
                 self.labels[self.selected_index].setText(self.sequences[self.selected_index])
 
-
         elif key == Qt.Key_Backspace and self.sequences[self.selected_index]:
             self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
             self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-            
+        
         elif key == Qt.Key_F11:
             if self.isFullScreen():
                 self.showNormal()
-                print("is fullscreen")
             else:
                 self.showFullScreen()
-                print("is fullscreen")
 
         super().keyPressEvent(event)
+
 
 
 if __name__ == '__main__':
