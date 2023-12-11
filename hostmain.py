@@ -1,10 +1,36 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PyQt5.QtCore import Qt, QRect, pyqtSlot
 
+
+class NoHoverButton(QPushButton):
+    def __init__(self, *args, **kwargs):
+        super(NoHoverButton, self).__init__(*args, **kwargs)
+        self.setStyleSheets()
+
+    def setStyleSheets(self):
+        self.setStyleSheet("""
+            QPushButton {
+                /* Define your normal button styles here */
+                background-color: transparent; /* Example style */
+                border: none; /* Example style */
+            }
+            QPushButton:hover {
+                /* Repeat the same styles for the hover state */
+                background-color: transparent;
+                border: none;
+            }
+            QPushButton:pressed {
+                /* Optionally, define styles for when the button is pressed */
+                /* Example: slightly different background color */
+                background-color: lightgray;
+            }
+        """)
+
+
 class EscapeRoomApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.correct_sequences = ['1234', '5678', 'ABCD', 'EFGH', 'IJKL']
+        self.correct_sequences = ['1234', 'DADW', 'KOBE', 'YOS1', 'D837']
         self.selected_index = 0
         self.sequences = ['' for _ in range(5)]
         self.labels = []
@@ -24,8 +50,8 @@ class EscapeRoomApp(QMainWindow):
             label.setFrameShape(QLabel.Box)
             label.setLineWidth(1)
             self.labels.append(label)
- 
-            button = QPushButton('O', self)
+        
+            button = NoHoverButton('O', self)
             button.setFocusPolicy(Qt.NoFocus)  # Set the focus policy to NoFocus
             self.buttons.append(button)
 
