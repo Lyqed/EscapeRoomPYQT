@@ -1,0 +1,1 @@
+- add slot-machine like animation with the yellow once completed.

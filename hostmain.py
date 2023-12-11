@@ -96,25 +96,31 @@ class EscapeRoomApp(QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         if key in (Qt.Key_Right, Qt.Key_Left):
-            # Update selected_index and ensure it stays within bounds
-            if key == Qt.Key_Right:
-                self.selected_index = (self.selected_index + 1) % len(self.labels)
-            else:
-                self.selected_index = (self.selected_index - 1) % len(self.labels)
+            original_index = self.selected_index
+            while True:
+                if key == Qt.Key_Right:
+                    self.selected_index = (self.selected_index + 1) % len(self.labels)
+                else:
+                    self.selected_index = (self.selected_index - 1) % len(self.labels)
+
+                if self.selected_index == original_index or self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:
+                    break
 
             self.highlightSelectedRectangle()
 
         elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
-            current_sequence = self.sequences[self.selected_index]
-            if len(current_sequence) < 4:
-                self.sequences[self.selected_index] += event.text().upper()
-                self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-                self.checkSequence(self.selected_index)  # Check the sequence after adding a character
+            if self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:  # Check if the current sequence is not yet solved
+                current_sequence = self.sequences[self.selected_index]
+                if len(current_sequence) < 4:
+                    self.sequences[self.selected_index] += event.text().upper()
+                    self.labels[self.selected_index].setText(self.sequences[self.selected_index])
+                    self.checkSequence(self.selected_index)
 
-        elif key == Qt.Key_Backspace and self.sequences[self.selected_index]:
-            self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
-            self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-            self.checkSequence(self.selected_index)  # Check the sequence after removing a character
+        elif key == Qt.Key_Backspace:
+            if self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:  # Check if the current sequence is not yet solved
+                if self.sequences[self.selected_index]:
+                    self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
+                    self.labels[self.selected_index].setText(self.sequences[self.selected_index])
 
         elif key == Qt.Key_F11:
             if self.isFullScreen():
@@ -123,6 +129,15 @@ class EscapeRoomApp(QMainWindow):
                 self.showFullScreen()
 
         super().keyPressEvent(event)
+
+    def checkSequence(self, index):
+        if self.sequences[index] == self.correct_sequences[index]:
+            self.buttons[index].setStyleSheet("color: green;")
+            self.buttons[index].setText('✔️')
+            self.buttons[index].setEnabled(False)  # Disable the button once the sequence is correct
+        else:
+            self.buttons[index].setStyleSheet("color: red;")
+            self.buttons[index].setText('❌')
 
         
     def checkSequence(self, index):
