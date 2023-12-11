@@ -84,10 +84,13 @@ class EscapeRoomApp(QMainWindow):
 
     def highlightSelectedRectangle(self):
         for i, label in enumerate(self.labels):
-            if i == self.selected_index:
-                label.setStyleSheet("background-color: yellow")
+            if self.sequences[i] == self.correct_sequences[i]:  # Maintain green border for solved sequences
+                label.setStyleSheet("border: 2px solid green;")
+            elif i == self.selected_index:
+                label.setStyleSheet("background-color: yellow; border: 1px solid;")  # Highlight selected
             else:
-                label.setStyleSheet("background-color: none")
+                label.setStyleSheet("background-color: none; border: 1px solid;")  # Default style
+
 
     def resizeEvent(self, event):
         self.updateUI()
@@ -96,17 +99,28 @@ class EscapeRoomApp(QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         if key in (Qt.Key_Right, Qt.Key_Left):
-            original_index = self.selected_index
+            new_index = self.selected_index
+
+            # Attempt to find the next unsolved sequence index
             while True:
                 if key == Qt.Key_Right:
-                    self.selected_index = (self.selected_index + 1) % len(self.labels)
-                else:
-                    self.selected_index = (self.selected_index - 1) % len(self.labels)
+                    new_index += 1
+                else:  # Qt.Key_Left
+                    new_index -= 1
 
-                if self.selected_index == original_index or self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:
+                # If we go out of bounds, just break and do not update the index
+                if new_index < 0 or new_index >= len(self.labels):
+                    break
+
+                # If we find an unsolved sequence, update the index and break
+                if self.sequences[new_index] != self.correct_sequences[new_index]:
+                    self.selected_index = new_index
                     break
 
             self.highlightSelectedRectangle()
+
+        # Rest of the keyPressEvent code remains the same
+
 
         elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
             if self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:  # Check if the current sequence is not yet solved
@@ -132,21 +146,18 @@ class EscapeRoomApp(QMainWindow):
 
     def checkSequence(self, index):
         if self.sequences[index] == self.correct_sequences[index]:
+            self.labels[index].setStyleSheet("border: 2px solid green;")  # Add green border to the label
             self.buttons[index].setStyleSheet("color: green;")
             self.buttons[index].setText('✔️')
-            self.buttons[index].setEnabled(False)  # Disable the button once the sequence is correct
+            self.buttons[index].setEnabled(False)
         else:
+            self.labels[index].setStyleSheet("border: 1px solid;")  # Default border for the label
             self.buttons[index].setStyleSheet("color: red;")
             self.buttons[index].setText('❌')
 
+
         
-    def checkSequence(self, index):
-        if self.sequences[index] == self.correct_sequences[index]:
-            self.buttons[index].setStyleSheet("color: green;")
-            self.buttons[index].setText('✔️')
-        else:
-            self.buttons[index].setStyleSheet("color: red;")
-            self.buttons[index].setText('❌')
+ 
 
 
 

@@ -1,1 +1,15 @@
 - add slot-machine like animation with the yellow once completed.
+
+- add green outline to text boxes once completed
+
+
+- stop right and left selctions going the opposite direction 
+
+- the order in which you enter should not matter
+
+- stop selection disappears
+
+- add an icon at the top left corner of the program + a differnet icon for the exe iteslef
+
+- add the libary iamge
+
