@@ -73,27 +73,15 @@ class EscapeRoomApp(QMainWindow):
             self.selected_index = (self.selected_index + 1) % 5 if key == Qt.Key_Right else (self.selected_index - 1) % 5
             self.highlightSelectedRectangle()
 
-        elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
+        elif key in (Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_A, Qt.Key_B, Qt.Key_C, Qt.Key_D, Qt.Key_E, Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_I, Qt.Key_J, Qt.Key_K, Qt.Key_L, Qt.Key_M, Qt.Key_N, Qt.Key_O, Qt.Key_P, Qt.Key_Q, Qt.Key_R, Qt.Key_S, Qt.Key_T, Qt.Key_U, Qt.Key_V, Qt.Key_W, Qt.Key_X, Qt.Key_Y, Qt.Key_Z):
             current_sequence = self.sequences[self.selected_index]
             if len(current_sequence) < 4:
                 self.sequences[self.selected_index] += event.text().upper()
                 self.labels[self.selected_index].setText(self.sequences[self.selected_index])
 
-
         elif key == Qt.Key_Backspace and self.sequences[self.selected_index]:
             self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
             self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-            
-        elif key == Qt.Key_F11:
-            if self.isFullScreen():
-                self.showNormal()
-                print("is fullscreen")
-            else:
-                self.showFullScreen()
-                print("is fullscreen")
-
-        super().keyPressEvent(event)
-
 
 if __name__ == '__main__':
     import sys
