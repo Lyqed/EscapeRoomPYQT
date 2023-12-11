@@ -24,9 +24,17 @@ class EscapeRoomApp(QMainWindow):
             label.setFrameShape(QLabel.Box)
             label.setLineWidth(1)
             self.labels.append(label)
-
+ 
             button = QPushButton('O', self)
-            button.clicked.connect(self.make_button_handler(i))
+            button.setStyleSheet("""
+            QPushButton { 
+                /* No specific styles for normal state */
+            }
+            QPushButton:hover {
+                /* Same as normal state, effectively disabling hover effect */
+            }
+        """)
+            button.setFocusPolicy(Qt.NoFocus)  # Set the focus policy to NoFocus
             self.buttons.append(button)
 
         self.updateUI()
@@ -70,18 +78,44 @@ class EscapeRoomApp(QMainWindow):
     def keyPressEvent(self, event):
         key = event.key()
         if key in (Qt.Key_Right, Qt.Key_Left):
-            self.selected_index = (self.selected_index + 1) % 5 if key == Qt.Key_Right else (self.selected_index - 1) % 5
+            # Update selected_index and ensure it stays within bounds
+            if key == Qt.Key_Right:
+                self.selected_index = (self.selected_index + 1) % len(self.labels)
+            else:
+                self.selected_index = (self.selected_index - 1) % len(self.labels)
+
             self.highlightSelectedRectangle()
 
-        elif key in (Qt.Key_0, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_A, Qt.Key_B, Qt.Key_C, Qt.Key_D, Qt.Key_E, Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_I, Qt.Key_J, Qt.Key_K, Qt.Key_L, Qt.Key_M, Qt.Key_N, Qt.Key_O, Qt.Key_P, Qt.Key_Q, Qt.Key_R, Qt.Key_S, Qt.Key_T, Qt.Key_U, Qt.Key_V, Qt.Key_W, Qt.Key_X, Qt.Key_Y, Qt.Key_Z):
+        elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
             current_sequence = self.sequences[self.selected_index]
             if len(current_sequence) < 4:
                 self.sequences[self.selected_index] += event.text().upper()
                 self.labels[self.selected_index].setText(self.sequences[self.selected_index])
+                self.checkSequence(self.selected_index)  # Check the sequence after adding a character
 
         elif key == Qt.Key_Backspace and self.sequences[self.selected_index]:
             self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
             self.labels[self.selected_index].setText(self.sequences[self.selected_index])
+            self.checkSequence(self.selected_index)  # Check the sequence after removing a character
+
+        elif key == Qt.Key_F11:
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
+
+        super().keyPressEvent(event)
+
+        
+    def checkSequence(self, index):
+        if self.sequences[index] == self.correct_sequences[index]:
+            self.buttons[index].setStyleSheet("color: green;")
+            self.buttons[index].setText('✔️')
+        else:
+            self.buttons[index].setStyleSheet("color: red;")
+            self.buttons[index].setText('❌')
+
+
 
 if __name__ == '__main__':
     import sys

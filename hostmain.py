@@ -24,7 +24,7 @@ class EscapeRoomApp(QMainWindow):
             label.setFrameShape(QLabel.Box)
             label.setLineWidth(1)
             self.labels.append(label)
-
+ 
             button = QPushButton('O', self)
             button.setFocusPolicy(Qt.NoFocus)  # Set the focus policy to NoFocus
             self.buttons.append(button)
@@ -101,8 +101,10 @@ class EscapeRoomApp(QMainWindow):
         
     def checkSequence(self, index):
         if self.sequences[index] == self.correct_sequences[index]:
+            self.buttons[index].setStyleSheet("color: green;")
             self.buttons[index].setText('✔️')
         else:
+            self.buttons[index].setStyleSheet("color: red;")
             self.buttons[index].setText('❌')
 
 
