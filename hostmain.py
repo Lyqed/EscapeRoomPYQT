@@ -27,7 +27,6 @@ class EscapeRoomApp(QMainWindow):
 
             button = QPushButton('O', self)
             button.setFocusPolicy(Qt.NoFocus)  # Set the focus policy to NoFocus
-            button.clicked.connect(self.make_button_handler(i))
             self.buttons.append(button)
 
         self.updateUI()
@@ -76,7 +75,7 @@ class EscapeRoomApp(QMainWindow):
                 self.selected_index = (self.selected_index + 1) % len(self.labels)
             else:
                 self.selected_index = (self.selected_index - 1) % len(self.labels)
-        
+
             self.highlightSelectedRectangle()
 
         elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
@@ -84,11 +83,13 @@ class EscapeRoomApp(QMainWindow):
             if len(current_sequence) < 4:
                 self.sequences[self.selected_index] += event.text().upper()
                 self.labels[self.selected_index].setText(self.sequences[self.selected_index])
+                self.checkSequence(self.selected_index)  # Check the sequence after adding a character
 
         elif key == Qt.Key_Backspace and self.sequences[self.selected_index]:
             self.sequences[self.selected_index] = self.sequences[self.selected_index][:-1]
             self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-        
+            self.checkSequence(self.selected_index)  # Check the sequence after removing a character
+
         elif key == Qt.Key_F11:
             if self.isFullScreen():
                 self.showNormal()
@@ -96,6 +97,13 @@ class EscapeRoomApp(QMainWindow):
                 self.showFullScreen()
 
         super().keyPressEvent(event)
+
+        
+    def checkSequence(self, index):
+        if self.sequences[index] == self.correct_sequences[index]:
+            self.buttons[index].setText('✔️')
+        else:
+            self.buttons[index].setText('❌')
 
 
 
