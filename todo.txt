@@ -1,7 +1,5 @@
 - add slot-machine like animation with the yellow once completed.
 
-- add green outline to text boxes once completed
-
 - Resize text boxes appriateltly
 
 - stop right and left selctions going the opposite direction 
