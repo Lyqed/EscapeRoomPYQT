@@ -78,7 +78,7 @@ class EscapeRoomApp(QMainWindow):
     def highlightSelectedRectangle(self):
         for i, label in enumerate(self.labels):
             if self.sequences[i] == self.correct_sequences[i]:  # Maintain green border for solved sequences
-                label.setStyleSheet("border: 2px solid green;")
+                label.setStyleSheet("border: 2px solid red;")
             elif i == self.selected_index:
                 label.setStyleSheet("background-color: yellow; border: 1px solid;")  # Highlight selected
             else:
@@ -110,7 +110,7 @@ class EscapeRoomApp(QMainWindow):
                     self.selected_index = new_index
                     break
 
-            self.highlightSelectedRectangle()
+            # self.highlightSelectedRectangle()
 
         # Rest of the keyPressEvent code remains the same
 

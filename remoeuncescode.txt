@@ -1,0 +1,1 @@
+- remoev             self.highlightSelectedRectangleInYellow() in the keypress function, i dont think it does anythingg

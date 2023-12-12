@@ -12,6 +12,8 @@
 
 - add an icon at the top left corner of the program + a differnet icon for the exe iteslef
 
+- ask dad if he wants to change anything
+
 - add the libary iamge
 
 - add solid red highlighting
