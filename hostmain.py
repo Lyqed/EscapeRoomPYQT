@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
-from PyQt5.QtCore import Qt, QRect, pyqtSlot
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QWidget
+from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot
+from PyQt5.QtGui import QPixmap
+import os
 
 
 class NoHoverButton(QPushButton):
@@ -35,8 +37,9 @@ class EscapeRoomApp(QMainWindow):
         self.sequences = ['' for _ in range(5)]
         self.labels = []
         self.buttons = []
-
         self.initUI()
+        self.solved_sequences = [False for _ in range(5)]  # Track solved sequences
+
 
     def initUI(self):
         self.setWindowTitle('Escape Room App')
@@ -123,12 +126,14 @@ class EscapeRoomApp(QMainWindow):
 
 
         elif key in range(Qt.Key_0, Qt.Key_9 + 1) or key in range(Qt.Key_A, Qt.Key_Z + 1):
-            if self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:  # Check if the current sequence is not yet solved
+            if not self.solved_sequences[self.selected_index]:
                 current_sequence = self.sequences[self.selected_index]
-                if len(current_sequence) < 4:
+                if len(current_sequence) < 4:  # Allow up to four characters
                     self.sequences[self.selected_index] += event.text().upper()
                     self.labels[self.selected_index].setText(self.sequences[self.selected_index])
-                    self.checkSequence(self.selected_index)
+
+                    if len(self.sequences[self.selected_index]) == 4:
+                        self.checkSequence()
 
         elif key == Qt.Key_Backspace:
             if self.sequences[self.selected_index] != self.correct_sequences[self.selected_index]:  # Check if the current sequence is not yet solved
@@ -144,21 +149,80 @@ class EscapeRoomApp(QMainWindow):
 
         super().keyPressEvent(event)
 
-    def checkSequence(self, index):
-        if self.sequences[index] == self.correct_sequences[index]:
-            self.labels[index].setStyleSheet("border: 2px solid green;")  # Add green border to the label
-            self.buttons[index].setStyleSheet("color: green;")
-            self.buttons[index].setText('✔️')
-            self.buttons[index].setEnabled(False)
+    def checkSequence(self):
+        current_sequence = self.sequences[self.selected_index]
+        if current_sequence == self.correct_sequences[self.selected_index]:
+            # Marking the current sequence as correct and highlighting it
+            self.labels[self.selected_index].setStyleSheet("border: 2px solid green;")
+            self.buttons[self.selected_index].setStyleSheet("color: green;")
+            self.buttons[self.selected_index].setText('✔️')
+            self.solved_sequences[self.selected_index] = True
+
+            self.moveToNextUnsolvedSequence()  # Move to the next unsolved sequence
         else:
-            self.labels[index].setStyleSheet("border: 1px solid;")  # Default border for the label
-            self.buttons[index].setStyleSheet("color: red;")
-            self.buttons[index].setText('❌')
+            # Mark the current sequence as incorrect
+            self.markAsIncorrect(self.selected_index)
+
+        # Check if all sequences are solved
+        self.checkAllSequencesSolved()
+
+    def markAsIncorrect(self, index):
+        self.labels[index].setStyleSheet("border: 1px solid;")
+        self.buttons[index].setStyleSheet("color: red;")
+        self.buttons[index].setText('❌')
+
+    def moveToNextUnsolvedSequence(self):
+        # Find the next sequence that is not yet solved
+        for i in range(1, len(self.solved_sequences)):
+            next_index = (self.selected_index + i) % len(self.solved_sequences)
+            if not self.solved_sequences[next_index]:
+                self.selected_index = next_index
+                break
+        self.highlightSelectedRectangle()
 
 
+    def checkAllSequencesSolved(self):
+        if all(seq == correct for seq, correct in zip(self.sequences, self.correct_sequences)):
+            self.startAnimation()
+            
+    def startAnimation(self):
+        self.anim_index = 0
+        self.anim_speed = 200  # Initial speed in milliseconds
+        self.anim_timer = QTimer(self)
+        self.anim_timer.timeout.connect(self.animateHighlight)
+        self.anim_timer.start(self.anim_speed)
+        
+    
+    def animateHighlight(self):
+        # Reset all to default style
+        for label in self.labels:
+            label.setStyleSheet("background-color: none; border: 1px solid;")
+
+        # Highlight current index
+        self.labels[self.anim_index].setStyleSheet("background-color: yellow; border: 1px solid;")
+
+        # Increase animation speed
+        self.anim_speed = max(50, self.anim_speed - 10)  # Decrease time for faster cycling
+        self.anim_timer.setInterval(self.anim_speed)
+
+        # Move to next index or end animation
+        self.anim_index = (self.anim_index + 1) % len(self.labels)
+        if self.anim_speed == 50:  # When speed is at its maximum
+            self.anim_timer.stop()
+            QTimer.singleShot(3000, self.showImage)  # Show image after 3 seconds
         
  
 
+    def showImage(self):
+        image_label = QLabel(self)
+        pixmap = QPixmap('library.png')
+        if pixmap.isNull():
+            print("Failed to load the image.")
+            return
+
+        image_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding))
+        image_label.setGeometry(0, 0, self.width(), self.height())  # Cover the entire window
+        image_label.show()
 
 
 if __name__ == '__main__':

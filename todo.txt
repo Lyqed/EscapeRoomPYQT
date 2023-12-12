@@ -2,6 +2,7 @@
 
 - add green outline to text boxes once completed
 
+- Resize text boxes appriateltly
 
 - stop right and left selctions going the opposite direction 
 
@@ -15,6 +16,15 @@
 
 - add lock to the program iteslef
 
+- add reset button to start over
+
+
 - add start on boot
 
 - build the http clask client gui
+
+
+
+- you should not be able to enter the same sequence twice
+
+- whenever you get a sequence right, it should automaticalyl select the next one, that is unless you solve all sequences.
