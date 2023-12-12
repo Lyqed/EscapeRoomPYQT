@@ -61,17 +61,7 @@ class EscapeRoomApp(QMainWindow):
         self.updateUI()
         self.show()
 
-    def make_button_handler(self, index):
-        @pyqtSlot()
-        def button_handler():
-            # Debug print
-            print(f"Button {index} clicked, sequence: {self.sequences[index]}")
-            
-            if self.sequences[index] == self.correct_sequences[index]:
-                self.buttons[index].setText('✔️')
-            else:
-                self.buttons[index].setText('❌')
-        return button_handler
+    
 
     def updateUI(self):
         rect_width = 100
@@ -88,7 +78,7 @@ class EscapeRoomApp(QMainWindow):
     def highlightSelectedRectangle(self):
         for i, label in enumerate(self.labels):
             if self.sequences[i] == self.correct_sequences[i]:  # Maintain green border for solved sequences
-                label.setStyleSheet("border: 2px solid green;")
+                label.setStyleSheet("border: 2px solid red;")
             elif i == self.selected_index:
                 label.setStyleSheet("background-color: yellow; border: 1px solid;")  # Highlight selected
             else:
@@ -151,16 +141,16 @@ class EscapeRoomApp(QMainWindow):
 
     def checkSequence(self):
         current_sequence = self.sequences[self.selected_index]
-        if current_sequence == self.correct_sequences[self.selected_index]:
-            # Marking the current sequence as correct and highlighting it
-            self.labels[self.selected_index].setStyleSheet("border: 2px solid green;")
+        if current_sequence in self.correct_sequences and not self.solved_sequences[self.correct_sequences.index(current_sequence)]:
+            # Correct sequence is entered
+            self.the_index_to_mark_as_green = self.selected_index
+            # self.labels[self.selected_index].setStyleSheet("border: 2px solid green;")
             self.buttons[self.selected_index].setStyleSheet("color: green;")
             self.buttons[self.selected_index].setText('✔️')
             self.solved_sequences[self.selected_index] = True
-
-            self.moveToNextUnsolvedSequence()  # Move to the next unsolved sequence
+            self.moveToNextUnsolvedSequence()
         else:
-            # Mark the current sequence as incorrect
+            # Incorrect sequence is entered
             self.markAsIncorrect(self.selected_index)
 
         # Check if all sequences are solved

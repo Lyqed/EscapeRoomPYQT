@@ -14,7 +14,12 @@
 
 - add the libary iamge
 
+- add solid red highlighting
+
+- add timer + button anmimation for getting wrong for 5 seconds it spins the o then - make it look like its checking for a bit longer before showing if its right or wrong
+
 - add lock to the program iteslef
+
 
 - add reset button to start over
 
@@ -22,7 +27,6 @@
 - add start on boot
 
 - build the http clask client gui
-
 
 
 - you should not be able to enter the same sequence twice
