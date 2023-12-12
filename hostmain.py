@@ -176,29 +176,35 @@ class EscapeRoomApp(QMainWindow):
             
     def startAnimation(self):
         self.anim_index = 0
-        self.anim_speed = 200  # Initial speed in milliseconds
+        self.anim_speed = 50  # Start with slower speed
+        self.is_accelerating = True  # Flag to check if accelerating or decelerating
         self.anim_timer = QTimer(self)
         self.anim_timer.timeout.connect(self.animateHighlight)
         self.anim_timer.start(self.anim_speed)
-        
-    
+
     def animateHighlight(self):
-        # Reset all to default style
-        for label in self.labels:
-            label.setStyleSheet("background-color: none; border: 1px solid;")
+        # Update label positions
+        for i, label in enumerate(self.labels):
+            new_y = label.y() + 10  # Move down
+            if new_y > self.height():
+                new_y = -label.height()  # Reset to top
+            label.move(label.x(), new_y)
 
-        # Highlight current index
-        self.labels[self.anim_index].setStyleSheet("background-color: yellow; border: 1px solid;")
+        # Adjust animation speed
+        if self.is_accelerating:
+            self.anim_speed = min(200, self.anim_speed + 5)  # Accelerate
+            if self.anim_speed == 200:
+                self.is_accelerating = False
+        else:
+            self.anim_speed = max(50, self.anim_speed - 5)  # Decelerate
 
-        # Increase animation speed
-        self.anim_speed = max(50, self.anim_speed - 10)  # Decrease time for faster cycling
         self.anim_timer.setInterval(self.anim_speed)
 
-        # Move to next index or end animation
-        self.anim_index = (self.anim_index + 1) % len(self.labels)
-        if self.anim_speed == 50:  # When speed is at its maximum
+        # Stop animation condition
+        if not self.is_accelerating and self.anim_speed == 50:
             self.anim_timer.stop()
-            QTimer.singleShot(20, self.showImage)  # Show image after 3 seconds
+            QTimer.singleShot(20, self.showImage)  # Delay to show image
+
         
  
 
