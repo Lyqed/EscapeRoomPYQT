@@ -1,19 +1,10 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QWidget
-from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot
 from PyQt5.QtGui import QPixmap
 import os
+import requests
 
 
-class ImageLoader(QThread):
-    imageLoaded = pyqtSignal(QPixmap)
-
-    def __init__(self, image_path):
-        super().__init__()
-        self.image_path = image_path
-
-    def run(self):
-        pixmap = QPixmap(self.image_path)
-        self.imageLoaded.emit(pixmap)
 
 
 class NoHoverButton(QPushButton):
@@ -51,6 +42,24 @@ class EscapeRoomApp(QMainWindow):
         self.buttons = []
         self.solved_sequences = []  # Initialize before calling initUI
         self.initUI()
+        self.command_check_timer = QTimer(self)
+        self.command_check_timer.timeout.connect(self.check_for_commands)
+        self.command_check_timer.start(1000)  # Check every second
+        
+    
+    def check_for_commands(self):
+        # Send a request to the Flask server to get commands
+        try:
+            response = requests.get('http://[Machine2_IP]:5000/get_commands')
+            if response.status_code == 200:
+                commands = response.json()
+                for command in commands:
+                    if command['type'] == 'update':
+                        self.update_sequence(command['data']['index'], command['data']['sequence'])
+                    elif command['type'] == 'reset':
+                        self.reset_sequences()
+        except requests.RequestException as e:
+            print("Error connecting to Flask server:", e)
 
 
 
@@ -77,20 +86,16 @@ class EscapeRoomApp(QMainWindow):
     
 
     def updateUI(self):
-        rect_width = int(self.width() * 0.1)  # Convert to int
-        rect_height = int(self.height() * 0.08)  # Convert to int
-        spacing = int(self.width() * 0.05)  # Convert to int
-        total_width = 5 * rect_width + 4 * spacing
+        rect_width = 100
+        total_width = 5 * rect_width + 4 * 50
         start_x = (self.width() - total_width) // 2
-        y_position = int(self.height() * 0.3)  # Convert to int and 30% from the top
 
         for i in range(5):
-            x_pos = start_x + i * (rect_width + spacing)
-            self.labels[i].setGeometry(x_pos, y_position, rect_width, rect_height)
-            self.buttons[i].setGeometry(x_pos, y_position + rect_height + 10, rect_width, 30)
+            x_pos = start_x + i * (rect_width + 50)
+            self.labels[i].setGeometry(x_pos, 200, rect_width, 50)
+            self.buttons[i].setGeometry(x_pos, 260, rect_width, 30)
 
         self.highlightSelectedRectangle()
-
 
     def highlightSelectedRectangle(self):
         for i, label in enumerate(self.labels):
@@ -105,9 +110,7 @@ class EscapeRoomApp(QMainWindow):
 
 
     def resizeEvent(self, event):
-        if hasattr(self, 'image_label') and self.image_label.pixmap() and not self.image_label.pixmap().isNull():
-            self.image_label.setPixmap(self.image_label.pixmap().scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            self.image_label.setGeometry(0, 0, self.width(), self.height())
+        self.updateUI()
         super().resizeEvent(event)
 
     def keyPressEvent(self, event):
@@ -194,52 +197,48 @@ class EscapeRoomApp(QMainWindow):
             
     def startAnimation(self):
         self.anim_index = 0
-        self.anim_speed = 200  # Initial speed in milliseconds
+        self.anim_speed = 50  # Start with slower speed
+        self.is_accelerating = True  # Flag to check if accelerating or decelerating
         self.anim_timer = QTimer(self)
         self.anim_timer.timeout.connect(self.animateHighlight)
         self.anim_timer.start(self.anim_speed)
- 
-    
+
     def animateHighlight(self):
-        # Reset all to default style
-        for label in self.labels:
-            label.setStyleSheet("background-color: none; border: 1px solid;")
+        # Update label positions
+        for i, label in enumerate(self.labels):
+            new_y = label.y() + 10  # Move down
+            if new_y > self.height():
+                new_y = -label.height()  # Reset to top
+            label.move(label.x(), new_y)
 
-        # Highlight current index
-        self.labels[self.anim_index].setStyleSheet("background-color: yellow; border: 1px solid;")
+        # Adjust animation speed
+        if self.is_accelerating:
+            self.anim_speed = min(200, self.anim_speed + 5)  # Accelerate
+            if self.anim_speed == 200:
+                self.is_accelerating = False
+        else:
+            self.anim_speed = max(50, self.anim_speed - 5)  # Decelerate
 
-        # Increase animation speed
-        self.anim_speed = max(50, self.anim_speed - 10)  # Decrease time for faster cycling
         self.anim_timer.setInterval(self.anim_speed)
 
-        # Move to next index or end animation
-        self.anim_index = (self.anim_index + 1) % len(self.labels)
-        if self.anim_speed == 50:  # When speed is at its maximum
+        # Stop animation condition
+        if not self.is_accelerating and self.anim_speed == 50:
             self.anim_timer.stop()
-            QTimer.singleShot(1500, self.showImage)
+            QTimer.singleShot(20, self.showImage)  # Delay to show image
+
         
  
 
     def showImage(self):
-        image_path = 'C:\\Stoarge\\Filen\\Escape room project\\libary.png'
-        if not os.path.exists(image_path):
-            print(f"Image file not found at: {image_path}")
-            return
-
-        self.image_loader = ImageLoader(image_path)
-        self.image_loader.imageLoaded.connect(self.setImage)
-        self.image_loader.start()
-
-    def setImage(self, pixmap):
+        image_label = QLabel(self)
+        pixmap = QPixmap('C:\Stoarge\Filen\Escape room project\libary.png')
         if pixmap.isNull():
             print("Failed to load the image.")
             return
 
-        self.image_label = QLabel(self)
-        self.image_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.image_label.setGeometry(0, 0, self.width(), self.height())
-        self.image_label.show()
-
+        image_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding))
+        image_label.setGeometry(0, 0, self.width(), self.height())  # Cover the entire window
+        image_label.show()
 
 
 if __name__ == '__main__':

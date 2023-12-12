@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QWid
 from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot
 from PyQt5.QtGui import QPixmap
 import os
+import requests
+
+
 
 
 class NoHoverButton(QPushButton):
@@ -39,6 +42,24 @@ class EscapeRoomApp(QMainWindow):
         self.buttons = []
         self.solved_sequences = []  # Initialize before calling initUI
         self.initUI()
+        # self.command_check_timer = QTimer(self)
+        # self.command_check_timer.timeout.connect(self.check_for_commands)
+        # self.command_check_timer.start(1000)  # Check every second
+        
+    
+    def check_for_commands(self):
+        # Send a request to the Flask server to get commands
+        try:
+            response = requests.get('http://localhost:5000/get_commands')
+            if response.status_code == 200:
+                commands = response.json()
+                for command in commands:
+                    if command['type'] == 'update':
+                        self.update_sequence(command['data']['index'], command['data']['sequence'])
+                    elif command['type'] == 'reset':
+                        self.reset_sequences()
+        except requests.RequestException as e:
+            print("Error connecting to Flask server:", e)
 
 
 
@@ -210,7 +231,7 @@ class EscapeRoomApp(QMainWindow):
 
     def showImage(self):
         image_label = QLabel(self)
-        pixmap = QPixmap('C:\Stoarge\Filen\Escape room project\libary.png')
+        pixmap = QPixmap('C:\Stoarge\Filen\Escape room project\Distratcionslibary.png')
         if pixmap.isNull():
             print("Failed to load the image.")
             return
