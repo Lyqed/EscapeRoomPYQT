@@ -1,7 +1,19 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QWidget
-from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, QTimer, pyqtSlot, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap
 import os
+
+
+class ImageLoader(QThread):
+    imageLoaded = pyqtSignal(QPixmap)
+
+    def __init__(self, image_path):
+        super().__init__()
+        self.image_path = image_path
+
+    def run(self):
+        pixmap = QPixmap(self.image_path)
+        self.imageLoaded.emit(pixmap)
 
 
 class NoHoverButton(QPushButton):
@@ -32,13 +44,14 @@ class NoHoverButton(QPushButton):
 class EscapeRoomApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.correct_sequences = ['1234', 'DADW', 'KOBE', 'YOS1', 'D837']
+        self.correct_sequences = ['1111', '2222', '3333', '4444', '5555']
         self.selected_index = 0
         self.sequences = ['' for _ in range(5)]
         self.labels = []
         self.buttons = []
+        self.solved_sequences = []  # Initialize before calling initUI
         self.initUI()
-        self.solved_sequences = []  # Track solved sequences by value
+
 
 
     def initUI(self):
@@ -64,16 +77,20 @@ class EscapeRoomApp(QMainWindow):
     
 
     def updateUI(self):
-        rect_width = 100
-        total_width = 5 * rect_width + 4 * 50
+        rect_width = int(self.width() * 0.1)  # Convert to int
+        rect_height = int(self.height() * 0.08)  # Convert to int
+        spacing = int(self.width() * 0.05)  # Convert to int
+        total_width = 5 * rect_width + 4 * spacing
         start_x = (self.width() - total_width) // 2
+        y_position = int(self.height() * 0.3)  # Convert to int and 30% from the top
 
         for i in range(5):
-            x_pos = start_x + i * (rect_width + 50)
-            self.labels[i].setGeometry(x_pos, 200, rect_width, 50)
-            self.buttons[i].setGeometry(x_pos, 260, rect_width, 30)
+            x_pos = start_x + i * (rect_width + spacing)
+            self.labels[i].setGeometry(x_pos, y_position, rect_width, rect_height)
+            self.buttons[i].setGeometry(x_pos, y_position + rect_height + 10, rect_width, 30)
 
         self.highlightSelectedRectangle()
+
 
     def highlightSelectedRectangle(self):
         for i, label in enumerate(self.labels):
@@ -88,7 +105,9 @@ class EscapeRoomApp(QMainWindow):
 
 
     def resizeEvent(self, event):
-        self.updateUI()
+        if hasattr(self, 'image_label') and self.image_label.pixmap() and not self.image_label.pixmap().isNull():
+            self.image_label.setPixmap(self.image_label.pixmap().scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.image_label.setGeometry(0, 0, self.width(), self.height())
         super().resizeEvent(event)
 
     def keyPressEvent(self, event):
@@ -179,7 +198,7 @@ class EscapeRoomApp(QMainWindow):
         self.anim_timer = QTimer(self)
         self.anim_timer.timeout.connect(self.animateHighlight)
         self.anim_timer.start(self.anim_speed)
-        
+ 
     
     def animateHighlight(self):
         # Reset all to default style
@@ -197,20 +216,30 @@ class EscapeRoomApp(QMainWindow):
         self.anim_index = (self.anim_index + 1) % len(self.labels)
         if self.anim_speed == 50:  # When speed is at its maximum
             self.anim_timer.stop()
-            QTimer.singleShot(3000, self.showImage)  # Show image after 3 seconds
+            QTimer.singleShot(1500, self.showImage)
         
  
 
     def showImage(self):
-        image_label = QLabel(self)
-        pixmap = QPixmap('library.png')
+        image_path = 'C:\\Stoarge\\Filen\\Escape room project\\libary.png'
+        if not os.path.exists(image_path):
+            print(f"Image file not found at: {image_path}")
+            return
+
+        self.image_loader = ImageLoader(image_path)
+        self.image_loader.imageLoaded.connect(self.setImage)
+        self.image_loader.start()
+
+    def setImage(self, pixmap):
         if pixmap.isNull():
             print("Failed to load the image.")
             return
 
-        image_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding))
-        image_label.setGeometry(0, 0, self.width(), self.height())  # Cover the entire window
-        image_label.show()
+        self.image_label = QLabel(self)
+        self.image_label.setPixmap(pixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.image_label.setGeometry(0, 0, self.width(), self.height())
+        self.image_label.show()
+
 
 
 if __name__ == '__main__':

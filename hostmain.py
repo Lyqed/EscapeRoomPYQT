@@ -32,7 +32,7 @@ class NoHoverButton(QPushButton):
 class EscapeRoomApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.correct_sequences = ['1234', 'DADW', 'KOBE', 'YOS1', 'D837']
+        self.correct_sequences = ['1111', '2222', '3333', '4444', '5555']
         self.selected_index = 0
         self.sequences = ['' for _ in range(5)]
         self.labels = []
@@ -198,13 +198,13 @@ class EscapeRoomApp(QMainWindow):
         self.anim_index = (self.anim_index + 1) % len(self.labels)
         if self.anim_speed == 50:  # When speed is at its maximum
             self.anim_timer.stop()
-            QTimer.singleShot(3000, self.showImage)  # Show image after 3 seconds
+            QTimer.singleShot(20, self.showImage)  # Show image after 3 seconds
         
  
 
     def showImage(self):
         image_label = QLabel(self)
-        pixmap = QPixmap('library.png')
+        pixmap = QPixmap('C:\Stoarge\Filen\Escape room project\libary.png')
         if pixmap.isNull():
             print("Failed to load the image.")
             return

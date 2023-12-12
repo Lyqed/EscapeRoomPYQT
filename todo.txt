@@ -1,34 +1,65 @@
-- add slot-machine like animation with the yellow once completed.
+# to do now
 
-- Resize text boxes appriateltly
 
-- stop right and left selctions going the opposite direction 
+- fix the last one comeplted issue.
 
-- the order in which you enter should not matter
 
-- stop selection disappears
+- fix the image loading
+
 
 - add an icon at the top left corner of the program + a differnet icon for the exe iteslef
+ and then complie into exe
 
-- ask dad if he wants to change anything
 
-- add the libary iamge
 
-- add solid red highlighting
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - add timer + button anmimation for getting wrong for 5 seconds it spins the o then - make it look like its checking for a bit longer before showing if its right or wrong
 
 - add lock to the program iteslef
 
 
-- add reset button to start over
-
-
 - add start on boot
 
-- build the http clask client gui
+- build the http clask client gui, and add to it start over button
 
+- add solid red highlighting around the text box, like the green highlhting whenvever getting things wrong
 
-- you should not be able to enter the same sequence twice
 
 - whenever you get a sequence right, it should automaticalyl select the next one, that is unless you solve all sequences.
+
+
+- ask dad if he wants to change anything
+
