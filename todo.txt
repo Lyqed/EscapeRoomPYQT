@@ -13,5 +13,8 @@
 
 - add the libary iamge
 
+- add lock to the program iteslef
+
+- add start on boot
 
 - build the http clask client gui
